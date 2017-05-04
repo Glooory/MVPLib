@@ -51,7 +51,7 @@ public class RequestInterceptor implements Interceptor {
         // 打印 url 信息
         Logger.d("Request Info:\n" +
                 "    Url:" + request.url() + "\n" +
-                "    Params:" + request.body() != null ? parseParams(request.body(), requestBuffer) : "mull" + "\n" +
+                "    Params:" + request.body() != null ? parseParams(request.body(), requestBuffer) : "null" + "\n" +
                 "    Connection:" + chain.connection() + "\n" +
                 "    Headers:" + request.headers());
 
