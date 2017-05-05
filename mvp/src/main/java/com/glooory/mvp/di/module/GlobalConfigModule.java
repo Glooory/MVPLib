@@ -27,12 +27,22 @@ public class GlobalConfigModule {
     private HttpRequestHandler mHttpRequestHandler;
     private List<Interceptor> mInterceptorList;
     private File mCacheFile;
+    //    private BaseImageLoadStrategy mImageLoaderStrategy;
+    private HttpClientModule.RetrofitConfig mRetrofitConfig;
+    private HttpClientModule.OkHttpClientConfig mOkHttpClientConfig;
+    private HttpClientModule.RxCacheConfig mRxCacheConfig;
+    private AppModule.GsonConfig mGsonConfig;
 
     private GlobalConfigModule(Builder builder) {
-        this.mApiBaseUrl = builder.mApiBaseUrl;
-        this.mHttpRequestHandler = builder.mHttpRequestHandler;
-        this.mInterceptorList = builder.mInterceptorList;
-        this.mCacheFile = builder.mCacheFile;
+        this.mApiBaseUrl = builder.apiBaseUrl;
+        this.mHttpRequestHandler = builder.httpRequestHandler;
+        this.mInterceptorList = builder.interceptorList;
+        this.mCacheFile = builder.cacheFile;
+//        this.mImageLoaderStrategy = builder.mImageLoaderStrategy;
+        this.mRetrofitConfig = builder.retrofitConfig;
+        this.mOkHttpClientConfig = builder.okHttpClientConfig;
+        this.mRxCacheConfig = builder.rxCacheConfig;
+        this.mGsonConfig = builder.gsonConfig;
     }
 
     public static Builder builder() {
@@ -65,10 +75,15 @@ public class GlobalConfigModule {
     }
 
     public static final class Builder {
-        private HttpUrl mApiBaseUrl;
-        private HttpRequestHandler mHttpRequestHandler;
-        private List<Interceptor> mInterceptorList = new ArrayList<>();
-        private File mCacheFile;
+        private HttpUrl apiBaseUrl;
+        private HttpRequestHandler httpRequestHandler;
+        private List<Interceptor> interceptorList = new ArrayList<>();
+        private File cacheFile;
+        //    private BaseImageLoadStrategy mImageLoaderStrategy;
+        private HttpClientModule.RetrofitConfig retrofitConfig;
+        private HttpClientModule.OkHttpClientConfig okHttpClientConfig;
+        private HttpClientModule.RxCacheConfig rxCacheConfig;
+        private AppModule.GsonConfig gsonConfig;
 
         private Builder() {
 
@@ -78,22 +93,42 @@ public class GlobalConfigModule {
             if (TextUtils.isEmpty(baseUrl)) {
                 throw new IllegalArgumentException("Base Url can not be empty!");
             }
-            this.mApiBaseUrl = HttpUrl.parse(baseUrl);
+            this.apiBaseUrl = HttpUrl.parse(baseUrl);
             return this;
         }
 
         public Builder httpRequestHandler(HttpRequestHandler httpRequestHandler) {
-            this.mHttpRequestHandler = httpRequestHandler;
+            this.httpRequestHandler = httpRequestHandler;
             return this;
         }
 
         public Builder addInterceptor(Interceptor interceptor) {
-            this.mInterceptorList.add(interceptor);
+            this.interceptorList.add(interceptor);
             return this;
         }
 
         public Builder cacheFile(File cacheFile) {
-            this.mCacheFile = cacheFile;
+            this.cacheFile = cacheFile;
+            return this;
+        }
+
+        public Builder retrofitConfig(HttpClientModule.RetrofitConfig retrofitConfig) {
+            this.retrofitConfig = retrofitConfig;
+            return this;
+        }
+
+        public Builder okHttpConfig(HttpClientModule.OkHttpClientConfig clientConfig) {
+            this.okHttpClientConfig = clientConfig;
+            return this;
+        }
+
+        public Builder rxCacheConfig(HttpClientModule.RxCacheConfig cacheConfig) {
+            this.rxCacheConfig = cacheConfig;
+            return this;
+        }
+
+        public Builder gsonConfig(AppModule.GsonConfig gsonConfig) {
+            this.gsonConfig = gsonConfig;
             return this;
         }
 

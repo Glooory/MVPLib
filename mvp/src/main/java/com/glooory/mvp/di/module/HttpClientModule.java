@@ -1,7 +1,11 @@
 package com.glooory.mvp.di.module;
 
-import com.glooory.mvp.integration.AppManager;
+import android.app.Application;
+import android.content.Context;
+
+import com.glooory.mvp.http.HttpRequestHandler;
 import com.glooory.mvp.http.RequestInterceptor;
+import com.glooory.mvp.util.FileUtils;
 
 import java.io.File;
 import java.util.List;
@@ -29,35 +33,34 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class HttpClientModule {
 
     private static final int TIME_OUT_DEFAULT = 10;
-    private AppManager mAppManager;
-
-    public HttpClientModule(AppManager appManager) {
-        this.mAppManager = appManager;
-    }
 
     @Singleton
     @Provides
-    Retrofit provideRetrofit(Retrofit.Builder builder, OkHttpClient httpClient, HttpUrl httpUrl) {
-        return builder
-                .baseUrl(httpUrl) // BaseUrl
-                .client(httpClient)
+    Retrofit provideRetrofit(Application application, RetrofitConfig retrofitConfig,
+            Retrofit.Builder builder, OkHttpClient okHttpClient, HttpUrl httpUrl) {
+        builder.baseUrl(httpUrl) // base url
+                .client(okHttpClient)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create()) // 使用 RxJava
-                .addConverterFactory(GsonConverterFactory.create()) // 使用 Gson
-                .build();
+                .addConverterFactory(GsonConverterFactory.create()); // 使用 Gson
+        retrofitConfig.configRetrofit(application, builder);
+        return builder.build();
     }
 
     @Singleton
     @Provides
-    OkHttpClient provideOkHttpClient(OkHttpClient.Builder builder, Interceptor interceptor,
-                                     List<Interceptor> interceptorList) {
+    OkHttpClient provideOkHttpClient(Application application, OkHttpClientConfig okHttpClientConfig,
+            OkHttpClient.Builder builder, Interceptor interceptor, List<Interceptor> interceptorList,
+            final HttpRequestHandler httpRequestHandler) {
         builder.connectTimeout(TIME_OUT_DEFAULT, TimeUnit.SECONDS)
                 .readTimeout(TIME_OUT_DEFAULT, TimeUnit.SECONDS)
-                .addNetworkInterceptor(interceptor);
+                .addNetworkInterceptor(interceptor)
+                .addInterceptor(chain -> chain.proceed(httpRequestHandler.onHttpRequestBefore(
+                        chain, chain.request()))
+                );
         if (interceptorList != null && interceptorList.size() > 0) {
-            for (Interceptor interceptorTemp : interceptorList) {
-                builder.addInterceptor(interceptorTemp);
-            }
+            interceptorList.forEach(builder::addInterceptor);
         }
+        okHttpClientConfig.configOkHttpClient(application, builder);
         return builder.build();
     }
 
@@ -76,21 +79,64 @@ public class HttpClientModule {
     @Singleton
     @Provides
     Interceptor provideInterceptor(RequestInterceptor interceptor) {
-        // Http Request 拦截器
         return interceptor;
     }
 
     @Singleton
     @Provides
-    RxCache provideRxCha(@Named("RxCacheDirectory") File cacheDir) {
-        return new RxCache
-                .Builder()
-                .persistence(cacheDir, new GsonSpeaker());
+    RxCache provideRxCache(Application application, RxCacheConfig rxCacheConfig,
+            @Named("RxCacheDirectory") File rxCacheDir) {
+        RxCache.Builder builder = new RxCache.Builder();
+        rxCacheConfig.configRxCache(application, builder);
+        return builder.persistence(rxCacheDir, new GsonSpeaker());
     }
 
+    /**
+     * 给 RxCache 提供缓存路径
+     * @param cacheDir
+     * @return
+     */
     @Singleton
     @Provides
-    AppManager provideAppManager() {
-        return mAppManager;
+    @Named("RxCacheDirectory")
+    File provideRxCacheDirectory(File cacheDir) {
+        File cacheDirectory = new File(cacheDir, "RxCache");
+        return FileUtils.makeDirs(cacheDirectory);
+    }
+
+    public interface RetrofitConfig {
+
+        void configRetrofit(Context context, Retrofit.Builder builder);
+
+        RetrofitConfig EMPTY_CONFIG = new RetrofitConfig() {
+            @Override
+            public void configRetrofit(Context context, Retrofit.Builder builder) {
+
+            }
+        };
+    }
+
+    public interface OkHttpClientConfig {
+
+        void configOkHttpClient(Context context, OkHttpClient.Builder builder);
+
+        OkHttpClientConfig EMPTY_CONFIG = new OkHttpClientConfig() {
+            @Override
+            public void configOkHttpClient(Context context, OkHttpClient.Builder builder) {
+
+            }
+        };
+    }
+
+    public interface RxCacheConfig {
+
+        void configRxCache(Context context, RxCache.Builder builder);
+
+        RxCacheConfig EMPTY_CONFIG = new RxCacheConfig() {
+            @Override
+            public void configRxCache(Context context, RxCache.Builder builder) {
+
+            }
+        };
     }
 }
