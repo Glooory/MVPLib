@@ -1,4 +1,4 @@
-package com.glooory.mvp.base;
+package com.glooory.mvp.integration;
 
 import android.app.Activity;
 import android.app.Application;

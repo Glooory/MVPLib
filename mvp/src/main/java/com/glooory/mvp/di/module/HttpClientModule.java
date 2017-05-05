@@ -1,6 +1,6 @@
 package com.glooory.mvp.di.module;
 
-import com.glooory.mvp.base.AppManager;
+import com.glooory.mvp.integration.AppManager;
 import com.glooory.mvp.http.RequestInterceptor;
 
 import java.io.File;
