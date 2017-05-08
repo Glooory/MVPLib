@@ -6,8 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 
-import com.glooory.mvp.base.App;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 

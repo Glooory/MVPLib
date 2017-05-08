@@ -3,8 +3,6 @@ package com.glooory.mvp.base.delegate;
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.glooory.mvp.base.App;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 

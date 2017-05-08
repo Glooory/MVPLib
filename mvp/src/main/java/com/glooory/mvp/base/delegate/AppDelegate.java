@@ -2,7 +2,6 @@ package com.glooory.mvp.base.delegate;
 
 import android.app.Application;
 
-import com.glooory.mvp.base.App;
 import com.glooory.mvp.di.component.AppComponent;
 import com.glooory.mvp.di.module.GlobalConfigModule;
 import com.glooory.mvp.integration.ActivityLifecycle;

@@ -1,4 +1,4 @@
-package com.glooory.mvp.base;
+package com.glooory.mvp.base.delegate;
 
 import com.glooory.mvp.di.component.AppComponent;
 

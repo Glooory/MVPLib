@@ -4,8 +4,6 @@ import com.glooory.mvp.util.ZipHelper;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
 
 import javax.inject.Inject;
@@ -13,7 +11,6 @@ import javax.inject.Inject;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
@@ -41,70 +38,99 @@ public class RequestInterceptor implements Interceptor {
             request = mHttpRequestHandler.onHttpRequestBefore(chain, request);
         }
 
-        Buffer requestBuffer = new Buffer();
-        if (request.body() != null) {
-            request.body().writeTo(requestBuffer);
-        } else {
-            Logger.d("request.body() == null");
-        }
+        boolean hasRequestBody = request.body() != null;
 
-        // 打印 url 信息
-        Logger.d("Request Info:\n" +
-                "    Url:" + request.url() + "\n" +
-                "    Params:" + request.body() != null ? parseParams(request.body(), requestBuffer) : "null" + "\n" +
-                "    Connection:" + chain.connection() + "\n" +
-                "    Headers:" + request.headers());
+        Buffer requestBuffer = new Buffer();
+
+        if (hasRequestBody) {
+            request.body().writeTo(requestBuffer);
+        }
 
         long timeRequestStart = System.nanoTime();
-        Response originalResponse = chain.proceed(request);
+        Response originalResponse = null;
+        try {
+            originalResponse = chain.proceed(request);
+        } catch (Exception e) {
+            Logger.d("Http Error: " + e);
+            e.printStackTrace();
+        }
+
         long timeRequestEnd = System.nanoTime();
+
+        String bodySize = originalResponse.body().contentLength() != -1 ?
+                originalResponse.body().contentLength() + " bytes" : "unknown length";
+
         Logger.d("Response:\n" +
                 "    Response Time:" + String.valueOf(timeRequestEnd - timeRequestStart) + "ms" +
+                "    Response Size" + bodySize +
                 "    Headers:" + originalResponse.headers());
 
-        ResponseBody responseBody = originalResponse.body();
-        BufferedSource source = responseBody.source();
-        source.request(Long.MAX_VALUE);
-        Buffer buffer = source.buffer();
-
-        // Content 的压缩类型
-        String encoding = originalResponse
-                .headers()
-                .get("Content-Encoding");
-
-        Buffer clone = buffer.clone();
-        String bodyString;
-
-        // 解析 Response Content
-        if (encoding != null && encoding.equalsIgnoreCase("gzip")) {
-            // Content 使用 gzip 压缩
-            bodyString = ZipHelper.decompressForGzip(clone.readByteArray());
-        } else if (encoding != null && encoding.equalsIgnoreCase("zlib")) {
-            // Content 使用 zlib 压缩
-            bodyString = ZipHelper.decompressToStringForZlib(clone.readByteArray());
-        } else {
-            // Content 没有被压缩
-            Charset charset = Charset.forName("UTF-8");
-            MediaType contentType = responseBody.contentType();
-            if (contentType != null) {
-                charset = contentType.charset(charset);
-            }
-            bodyString = clone.readString(charset);
-        }
-        Logger.d("Result:\n" + bodyString);
+        String bodyString = printResponse(request, originalResponse);
 
         if (mHttpRequestHandler != null) {
-            // 这里可以比客户端提前一步拿到服务器返回的结果，可以做一些其他操作，如 Token 失效重新获取等
             return mHttpRequestHandler.onHttpResultResponse(bodyString, chain, originalResponse);
         }
 
         return originalResponse;
     }
 
-    public static String parseParams(RequestBody body, Buffer requestBuffer) throws UnsupportedEncodingException {
-        if (body.contentType() != null && !body.contentType().toString().contains("multipart")) {
-            return URLDecoder.decode(requestBuffer.readUtf8(), "UTF-8");
+    private String printResponse(Request request, Response originalResponse) throws IOException {
+        // 读取服务器返回的结果
+        ResponseBody responseBody = originalResponse.body();
+        String bodyString = null;
+        if (isParseable(responseBody)) {
+            BufferedSource bufferedSource = responseBody.source();
+            bufferedSource.request(Long.MAX_VALUE);
+            Buffer buffer = bufferedSource.buffer();
+
+            // 获取 content 的压缩类型
+            String encoding = originalResponse.headers().get("Content-Encoding");
+
+            Buffer clone = buffer.clone();
+
+            // 解析 Response Content
+            bodyString = parseResponseContent(responseBody, encoding, clone);
+
+            Logger.d("Response:\n" + bodyString);
+        } else {
+            Logger.d("Response:\n" + "The Response can not be parsed");
         }
-        return "null";
+        return bodyString;
     }
+
+    private String parseResponseContent(ResponseBody responseBody, String encoding, Buffer clone) {
+        Charset charset = Charset.forName("UTF-8");
+        MediaType contentType = responseBody.contentType();
+        if (contentType != null) {
+            charset = contentType.charset(charset);
+        }
+        if (encoding != null && encoding.equalsIgnoreCase("gzip")) { // Content 使用 gzip 压缩
+            return ZipHelper.decompressForGzip(clone.readByteArray(), convertCharset(charset));
+        } else if (encoding != null && encoding.equalsIgnoreCase("zlib")) { // Content 使用 Zlib 压缩
+            return ZipHelper.decompressToStringForZlib(clone.readByteArray(), convertCharset(charset));
+        } else { // Content 没有被压缩
+            return clone.readString(charset);
+        }
+    }
+
+    public static boolean isParseable(ResponseBody responseBody) {
+        if (responseBody.contentLength() == 0) {
+            return false;
+        }
+        return responseBody.contentType().toString().contains("text") || isJson(responseBody);
+    }
+
+    public static boolean isJson(ResponseBody responseBody) {
+        return responseBody.contentType().toString().contains("json");
+    }
+
+    public static String convertCharset(Charset charset) {
+        String s = charset.toString();
+        int i = s.indexOf("[");
+        if (i == -1) {
+            return s;
+        }
+        return s.substring(i + 1, s.length() - 1);
+    }
+
 }
