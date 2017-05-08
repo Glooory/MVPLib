@@ -11,12 +11,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Created by Glooory on 17/5/3.
  * Activity 的管理类
  */
-
+@Singleton
 public class AppManager {
 
     private Application mApplication;
