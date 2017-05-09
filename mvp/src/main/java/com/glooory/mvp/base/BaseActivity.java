@@ -2,7 +2,7 @@ package com.glooory.mvp.base;
 
 import com.glooory.mvp.base.delegate.IActivity;
 import com.glooory.mvp.mvp.IPresenter;
-import com.trello.rxlifecycle.components.RxActivity;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import javax.inject.Inject;
 
@@ -10,7 +10,8 @@ import javax.inject.Inject;
  * Created by Glooory on 17/5/9.
  */
 
-public abstract class BaseActivity<P extends IPresenter> extends RxActivity implements IActivity {
+public abstract class BaseActivity<P extends IPresenter> extends RxAppCompatActivity
+        implements IActivity {
 
     protected final String TAG = this.getClass().getSimpleName();
     @Inject
