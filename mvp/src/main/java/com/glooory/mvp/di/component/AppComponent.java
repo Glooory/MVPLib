@@ -1,14 +1,16 @@
 package com.glooory.mvp.di.component;
 
+import com.google.gson.Gson;
+
 import android.app.Application;
 
 import com.glooory.mvp.base.delegate.AppDelegate;
 import com.glooory.mvp.di.module.AppModule;
 import com.glooory.mvp.di.module.GlobalConfigModule;
 import com.glooory.mvp.di.module.HttpClientModule;
+import com.glooory.mvp.imageloader.ImageLoader;
 import com.glooory.mvp.integration.AppManager;
 import com.glooory.mvp.integration.IRepositoryManager;
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Map;
@@ -34,8 +36,10 @@ public interface AppComponent {
 
     Gson gson();
 
+    ImageLoader imageLoader();
+
     // 缓存文件的根目录
-    File rxCacheFile();
+    File cacheFile();
 
     // 用于管理所有的 Activity
     AppManager appManager();

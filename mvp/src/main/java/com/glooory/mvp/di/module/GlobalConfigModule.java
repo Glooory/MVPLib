@@ -4,6 +4,7 @@ import android.app.Application;
 import android.text.TextUtils;
 
 import com.glooory.mvp.http.HttpRequestHandler;
+import com.glooory.mvp.imageloader.BaseImageLoaderStrategy;
 import com.glooory.mvp.util.FileUtils;
 
 import java.io.File;
@@ -27,7 +28,7 @@ public class GlobalConfigModule {
     private HttpRequestHandler mHttpRequestHandler;
     private List<Interceptor> mInterceptorList;
     private File mCacheFile;
-    //    private BaseImageLoadStrategy mImageLoaderStrategy;
+    private BaseImageLoaderStrategy mImageLoaderStrategy;
     private HttpClientModule.RetrofitConfig mRetrofitConfig;
     private HttpClientModule.OkHttpClientConfig mOkHttpClientConfig;
     private HttpClientModule.RxCacheConfig mRxCacheConfig;
@@ -38,7 +39,7 @@ public class GlobalConfigModule {
         this.mHttpRequestHandler = builder.httpRequestHandler;
         this.mInterceptorList = builder.interceptorList;
         this.mCacheFile = builder.cacheFile;
-//        this.mImageLoaderStrategy = builder.mImageLoaderStrategy;
+        this.mImageLoaderStrategy = builder.mImageLoaderStrategy;
         this.mRetrofitConfig = builder.retrofitConfig;
         this.mOkHttpClientConfig = builder.okHttpClientConfig;
         this.mRxCacheConfig = builder.rxCacheConfig;
@@ -79,7 +80,7 @@ public class GlobalConfigModule {
         private HttpRequestHandler httpRequestHandler;
         private List<Interceptor> interceptorList = new ArrayList<>();
         private File cacheFile;
-        //    private BaseImageLoadStrategy mImageLoaderStrategy;
+        private BaseImageLoaderStrategy mImageLoaderStrategy;
         private HttpClientModule.RetrofitConfig retrofitConfig;
         private HttpClientModule.OkHttpClientConfig okHttpClientConfig;
         private HttpClientModule.RxCacheConfig rxCacheConfig;
