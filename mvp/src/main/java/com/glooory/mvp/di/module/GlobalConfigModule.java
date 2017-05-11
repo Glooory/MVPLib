@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.glooory.mvp.http.HttpRequestHandler;
 import com.glooory.mvp.imageloader.BaseImageLoaderStrategy;
+import com.glooory.mvp.imageloader.glide.GlideImageLoaderStrategy;
 import com.glooory.mvp.util.FileUtils;
 
 import java.io.File;
@@ -65,14 +66,65 @@ public class GlobalConfigModule {
     @Singleton
     @Provides
     HttpRequestHandler provideHttpRequestHandler() {
-        return mHttpRequestHandler == null ? HttpRequestHandler.EMPTY_HTTP_REQUEST_HANDLER
-                : mHttpRequestHandler;
+        if (mHttpRequestHandler == null) {
+            return HttpRequestHandler.EMPTY_HTTP_REQUEST_HANDLER;
+        }
+        return mHttpRequestHandler;
     }
 
     @Singleton
     @Provides
     File provideRxCacheFile(Application application) {
-        return mCacheFile == null ? FileUtils.getCacheFile(application) : mCacheFile;
+        if (mCacheFile == null) {
+            return FileUtils.getCacheFile(application);
+        }
+        return mCacheFile;
+    }
+
+    @Singleton
+    @Provides
+    BaseImageLoaderStrategy provideImageLoaderStrategy() {
+        // 图片加载默认使用 glide
+        if (mImageLoaderStrategy == null) {
+            return new GlideImageLoaderStrategy();
+        }
+        return mImageLoaderStrategy;
+    }
+
+    @Singleton
+    @Provides
+    HttpClientModule.RetrofitConfig provideRetrofitConfig() {
+        if (mRxCacheConfig == null) {
+            return HttpClientModule.RetrofitConfig.EMPTY_CONFIG;
+        }
+        return mRetrofitConfig;
+    }
+
+    @Singleton
+    @Provides
+    HttpClientModule.OkHttpClientConfig provideOkHttpClientConfig() {
+        if (mOkHttpClientConfig == null) {
+            return HttpClientModule.OkHttpClientConfig.EMPTY_CONFIG;
+        }
+        return mOkHttpClientConfig;
+    }
+
+    @Singleton
+    @Provides
+    HttpClientModule.RxCacheConfig provideRxCacheConfig() {
+        if (mRxCacheConfig == null) {
+            return HttpClientModule.RxCacheConfig.EMPTY_CONFIG;
+        }
+        return mRxCacheConfig;
+    }
+
+    @Singleton
+    @Provides
+    AppModule.GsonConfig provideGsonConfig() {
+        if (mGsonConfig == null) {
+            return AppModule.GsonConfig.EMPTY_CONFIG;
+        }
+        return mGsonConfig;
     }
 
     public static final class Builder {
