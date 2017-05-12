@@ -3,7 +3,10 @@ package com.glooory.mvp.base.delegate;
 import android.app.Application;
 
 import com.glooory.mvp.di.component.AppComponent;
+import com.glooory.mvp.di.component.DaggerAppComponent;
+import com.glooory.mvp.di.module.AppModule;
 import com.glooory.mvp.di.module.GlobalConfigModule;
+import com.glooory.mvp.di.module.HttpClientModule;
 import com.glooory.mvp.integration.ActivityLifecycle;
 import com.glooory.mvp.integration.ConfigModule;
 import com.glooory.mvp.util.ManifestParser;
@@ -37,12 +40,12 @@ public class AppDelegate implements App {
     }
 
     public void onCreate() {
-//        mAppComponent = DaggerAppComponent
-//                .builder()
-//                .appModule(new AppModule(mApplication)) //提供application
-//                .httpClientModule(new HttpClientModule()) //用于提供okhttp和retrofit的单例
-//                .globalConfigModule(getGlobalConfigModule(mApplication, mConfigModuleList)) //全局配置
-//                .build();
+        mAppComponent = DaggerAppComponent
+                .builder()
+                .appModule(new AppModule(mApplication)) //提供application
+                .httpClientModule(new HttpClientModule()) //用于提供okhttp和retrofit的单例
+                .globalConfigModule(getGlobalConfigModule(mApplication, mConfigModuleList)) //全局配置
+                .build();
 
         mAppComponent.inject(this);
 

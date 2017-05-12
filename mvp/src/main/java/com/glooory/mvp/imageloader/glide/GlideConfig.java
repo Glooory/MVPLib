@@ -29,14 +29,14 @@ public class GlideConfig implements GlideModule {
     public static final int IMAGE_DISK_CACHE_MAX_SIZE = 100 * 1024 * 1024;
 
     @Override
-    public void applyOptions(Context context, GlideBuilder builder) {
+    public void applyOptions(final Context context, GlideBuilder builder) {
         builder.setDiskCache(new DiskCache.Factory() {
 
             @Override
             public DiskCache build() {
                 AppComponent appComponent = ((App) context.getApplicationContext()).getAppComponent();
                 return DiskLruCacheWrapper.get(FileUtils.makeDirs(
-                        new File(appComponent.rxCacheFile(), "Glide")), IMAGE_DISK_CACHE_MAX_SIZE);
+                        new File(appComponent.cacheFile(), "Glide")), IMAGE_DISK_CACHE_MAX_SIZE);
             }
         });
 

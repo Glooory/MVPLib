@@ -75,7 +75,7 @@ public class GlideImageLoaderStrategy implements BaseImageLoaderStrategy<GlideIm
     }
 
     @Override
-    public void clear(Context context, GlideImageConfig config) {
+    public void clear(final Context context, GlideImageConfig config) {
         if (context == null) {
             throw new IllegalStateException("Context is required");
         }

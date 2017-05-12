@@ -8,6 +8,7 @@ import com.glooory.mvp.http.RequestInterceptor;
 import com.glooory.mvp.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,7 @@ import io.victoralbertos.jolyglot.GsonSpeaker;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -54,11 +56,17 @@ public class HttpClientModule {
         builder.connectTimeout(TIME_OUT_DEFAULT, TimeUnit.SECONDS)
                 .readTimeout(TIME_OUT_DEFAULT, TimeUnit.SECONDS)
                 .addNetworkInterceptor(interceptor)
-                .addInterceptor(chain -> chain.proceed(httpRequestHandler.onHttpRequestBefore(
-                        chain, chain.request()))
-                );
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        return chain.proceed(httpRequestHandler.
+                                onHttpRequestBefore(chain, chain.request()));
+                    }
+                });
         if (interceptorList != null && interceptorList.size() > 0) {
-            interceptorList.forEach(builder::addInterceptor);
+            for (Interceptor interceptorTemp : interceptorList) {
+                builder.addInterceptor(interceptorTemp);
+            }
         }
         okHttpClientConfig.configOkHttpClient(application, builder);
         return builder.build();
